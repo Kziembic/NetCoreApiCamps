@@ -141,5 +141,31 @@ namespace CoreCodeCamp.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Failed to put Talk");
             }
         }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(string moniker, int id)
+        {
+            try
+            {
+                var oldTalk = await _repository.GetTalkByMonikerAsync(moniker, id);
+                if (oldTalk is null)
+                {
+                    return NotFound("Failed to find the talk to delete");
+                }
+
+                _repository.Delete(oldTalk);
+
+                if (await _repository.SaveChangesAsync())
+                {
+                    return Ok();
+                }
+            }
+            catch (Exception)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Database Failure");
+            }
+
+            return BadRequest("Failed to delete the Talk");
+        }
     }
 }
