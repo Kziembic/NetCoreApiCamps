@@ -48,6 +48,11 @@ namespace CoreCodeCamp.Controllers
             {
                 var talk = await _repository.GetTalkByMonikerAsync(moniker, id);
 
+                if (talk is null)
+                {
+                    return NotFound();
+                }
+
                 return _mapper.Map<TalkModel>(talk);
             }
             catch (Exception)
