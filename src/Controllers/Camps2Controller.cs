@@ -12,16 +12,17 @@ using System.Threading.Tasks;
 
 namespace CoreCodeCamp.Controllers
 {
-    [Route("api/camps")]
-    [ApiVersion("2.0")]
+    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [ApiVersion("1.1")]
     [ApiController]
-    public class Camps2Controller : ControllerBase
+    public class CampsController : ControllerBase
     {
         private readonly ICampRepository _repository;
         private readonly IMapper _mapper;
         private readonly LinkGenerator _linkGenerator;
 
-        public Camps2Controller(ICampRepository repository, IMapper mapper, LinkGenerator linkGenerator)
+        public CampsController(ICampRepository repository, IMapper mapper, LinkGenerator linkGenerator)
         {
             _repository = repository;
             _mapper = mapper;
@@ -29,19 +30,14 @@ namespace CoreCodeCamp.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> Get(bool includeTalks = false)
+        public async Task<ActionResult<CampModel[]>> Get(bool includeTalks = false)
         {
             try
             {
                 var results = await _repository.GetAllCampsAsync(includeTalks);
-                var result = new
-                {
-                    Count = results.Count(),
-                    Results = _mapper.Map<CampModel[]>(results)
-                };
-                return Ok(result);
-            }
 
+                return _mapper.Map<CampModel[]>(results);
+            }
             catch (Exception)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError, "Database Failure");
@@ -50,11 +46,33 @@ namespace CoreCodeCamp.Controllers
         }
 
         [HttpGet("{moniker}")]
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult<CampModel>> Get(string moniker)
         {
             try
             {
                 var result = await _repository.GetCampAsync(moniker);
+
+                if (result == null)
+                {
+                    return NotFound();
+                }
+
+                return _mapper.Map<CampModel>(result);
+            }
+            catch (Exception)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Database Failure");
+            }
+        }
+
+        [HttpGet("{moniker}")]
+        [MapToApiVersion("1.1")]
+        public async Task<ActionResult<CampModel>> Get11(string moniker)
+        {
+            try
+            {
+                var result = await _repository.GetCampAsync(moniker, true);
 
                 if (result == null)
                 {
