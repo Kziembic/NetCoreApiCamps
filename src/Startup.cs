@@ -31,7 +31,8 @@ namespace CoreCodeCamp
           opt.AssumeDefaultVersionWhenUnspecified = true;
           opt.DefaultApiVersion = new ApiVersion(1, 1);
           opt.ReportApiVersions = true;
-          opt.ApiVersionReader = new HeaderApiVersionReader("x-version");
+          opt.ApiVersionReader = ApiVersionReader.Combine(new HeaderApiVersionReader("x-version"),
+              new QueryStringApiVersionReader("ver", "version"));
       });
 
       services.AddControllers();
